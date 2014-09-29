@@ -18,7 +18,7 @@ distance.  On the map, GPS coordinates matching most closely to full kilometers
 are highlighted with numbers.
 
 Here is an example image from data provided in file `example.csv`:
-![Run in New York](./example.svg)
+![Run in New York](./example.png)
 
 Note that the distance information is accurately calculated with the
 ellipsoidal formula by **Thaddeus Vincenty** (the Earth is not a ball, after
