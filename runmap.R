@@ -1,3 +1,5 @@
+#!/usr/bin/env Rscript
+#
 # References:
 # https://gist.github.com/mollietaylor/4210660
 # http://stackoverflow.com/questions/18136468/is-there-a-way-to-add-a-scale-bar-for-linear-distances-to-ggmap
@@ -7,9 +9,44 @@
 
 # layout for the image
 
+sink("/dev/null")
+
 library(OpenStreetMap)
 library(ggplot2)
 library(wq)
+library(extrafont)
+library(optparse)
+
+option_list <- list(
+       make_option(c("-i", "--infile"), default="in.csv",
+                   help="File containing the GPS data (csv) [default %default]"),
+       make_option(c("-t", "--imgtype"), default="svg",
+                   help="Type of the resulting image file (svg, png or pdf) [default %default]"),
+       make_option(c("-o", "--outfile"), default="out.svg",
+                   help="Filename for the image [default %default]")
+       )
+
+opt <- parse_args(OptionParser(option_list=option_list))
+
+imgtype=opt$imgtype
+
+# Name of the input file
+infile=opt$infile
+
+# Name of the output file
+outfile=opt$outfile
+
+# Output file type
+if (imgtype == "svg") {
+    svg(outfile)
+} else if (imgtype == "png") {
+    png(outfile)
+} else if (imgtype == "pdf") {
+    pdf(outfile)
+} else {
+    print("Wrong image type selected!")
+    q()
+}
 
 # Running average (trailing)
 ma <- function(x,n=15){filter(x,rep(1/n,n), sides=1)}
@@ -81,8 +118,7 @@ geoDist3D <- function(p1, p2) {
 
 
 # Load the GPS file
-gps <- read.csv("out.csv",
-                    header = TRUE)
+gps <- read.csv(infile, header = TRUE)
 
 # Include the distance
 gps$dist.prev = 0.0
@@ -94,27 +130,14 @@ gps$dist = 0.0
 gps$dist[2:nrow(gps)] =
     sapply(2:nrow(gps), function(i) sum(gps$dist.prev[1:i]))
 
-gps$pace = 0.0
-gps$pace[2:nrow(gps)] =
-    unlist(sapply(2:nrow(gps),
-                 function(i) difftime(strptime(paste(gps$Date[i],gps$Time[i]),"%Y/%m/%d %H:%M:%S"),
-                                      strptime(paste(gps$Date[i-1],gps$Time[i-1]),"%Y/%m/%d %H:%M:%S"),
-                                      unit="s")/
-                             gps$dist.prev[i]/60.0))
 
 # Get the map
-map =  openmap(c(max(gps$Latitude)+0.01, min(gps$Longitude)-0.01),
-               c(min(gps$Latitude)-0.01, max(gps$Longitude)+0.01),
-               type="osm-bw")
+map =  openmap(c(max(gps$Latitude)+0.005, min(gps$Longitude)-0.005),
+               c(min(gps$Latitude)-0.005, max(gps$Longitude)+0.005),
+               type="osm")
 
 # Project the map to Long-Lat
 mapLL = openproj(map)
-
-
-# Layout for the figure
-layout(matrix(c(1,1,1,1,2,2,2,3,2,2,2,4,2,2,2,5), 4, 4, byrow = TRUE), 
-       heights=c(1,2,2,2))
-
 
 
 # Plot info
@@ -123,36 +146,85 @@ tottime = difftime(strptime(paste(gps$Date[nrow(gps)],gps$Time[nrow(gps)]),
                    strptime(paste(gps$Date[1],gps$Time[1]),
                             "%Y/%m/%d %H:%M:%S"),
                    unit="h")
+
+# Calculate times in proper unit for summary
 toth = floor(tottime)
 totm = round((tottime - toth) * 60)
+paces = tottime*60*60/gps$dist[nrow(gps)]
+pacem = floor(paces/60.0)
+paces = round(paces - pacem*60.0)
 
+
+# Paces measured point-by-point are inaccurage; use 100 m divisions
+maxdist = gps$dist[nrow(gps)]
+d = seq(1,floor(maxdist*10))*0.1
+p = seq(1,floor(maxdist*10))*0.1
+index = 1
+for (i in 1:floor(maxdist*10)) {
+    indexlast = index
+    index = which(min(abs(gps$dist-i*0.1))==abs(gps$dist-i*0.1))
+    dt = difftime(strptime(paste(gps$Date[index],gps$Time[index]),"%Y/%m/%d %H:%M:%S"),
+                  strptime(paste(gps$Date[indexlast],gps$Time[indexlast]),"%Y/%m/%d %H:%M:%S"),
+                  unit="s")
+    dx = gps$dist[index] - gps$dist[indexlast]
+    p[i] = dt/60.0/dx
+}
+
+# Plot summary text
 p0 <- ggplot() +
-    annotate("text", x = 0, y = 25, hjust=0, family="courier", fontface="bold",
+    annotate("text", x = 0, y = 0.85, cex=6.0,  hjust=0, fontface="bold", family="Courier New",
              label = paste(sep = "", strftime(gps$Date[1],'%A run'), " (",
                                 strftime(gps$Date[1],'%Y/%m/%d'),
                                     " @ ",gps$Time[1],")")) +
-    annotate("text", x = 0, y = 25, hjust=0, family="courier", fontface="normal",
+    annotate("text", x = 0, y = 0.30, cex=5.0, hjust=0, fontface="plain", family="Courier New",
+             lineheight=0.80,
              label = paste(sep = "", "Total distance: ",sprintf("%.2f", gps$dist[nrow(gps)]), ' km',
-                    "\n", "Total time: ", toth, ":", totm)) + 
+                    "\n", "Total time: ", toth, ":", sprintf("%02d", totm), "\n",
+                    "Average pace: ", pacem, ":", sprintf("%02d", paces), " min/km")) + 
     theme(line = element_blank(),
           text = element_blank(),
           line = element_blank(),
           panel.background = element_blank(),
-          title = element_blank())
+          title = element_blank()) +
+    xlim(0:1) + ylim (0:1)
 
 # Plot the map
-p1 <- autoplot(mapLL, expand=FALSE, main=strftime(gps$Date[1],'%A')) +
+p1 <- autoplot(mapLL) +
       geom_point(aes(x = Longitude,
                y = Latitude),
                data = gps,
-               colour = rgb(0,0,0,0.2),
-               size = 3) +
+               colour = rgb(0,0,0.8,0.5),
+               size = 2) +
+      geom_point(aes(x = Longitude,
+               y = Latitude),
+               data = gps[1,],
+               colour = rgb(0,0,0.8,0.8),
+               size = 5) +
+      geom_point(aes(x = Longitude,
+               y = Latitude),
+               data = gps[nrow(gps),],
+               colour = rgb(0,0.8,0,0.8),
+               size = 5) +
     theme(line = element_blank(),
           text = element_blank(),
           line = element_blank(),
           panel.background = element_blank(),
           title = element_blank())
 
+# Add markers for each kilometer
+for (i in 1:floor(gps$dist[nrow(gps)])) {
+
+    index = which(min(abs(gps$dist-i))==abs(gps$dist-i))
+    p1 = p1 + geom_point(aes(x = Longitude,
+                y = Latitude),
+               data = gps[index,],
+               colour = rgb(1,1,1,0.6),
+                size = 8) +
+    annotate("text", x = gps$Longitude[index], y = gps$Latitude[index],
+              label = sprintf("%d",i))
+
+
+}
 
 # Altitude plot
 p2 <- ggplot() +
@@ -162,8 +234,24 @@ p2 <- ggplot() +
            data = gps,
            colour=rgb(0,0.8,0,0.7)) +
            xlab("distance (km)") +
-           ylab("altitude (m)")
+           ylab("altitude (m)") +
+           theme(axis.title.x = element_text(family="Droid Sans Mono")) +
+           theme(axis.title.y = element_text(family="Droid Sans Mono"))
 
+
+# Pace plot
+p4 <- ggplot() +
+    geom_line(aes(x = d,
+                 y = p),
+              size=1.6,
+           col=rgb(0.2,0.2,0.2,0.7)) +
+           xlab("distance (km)") +
+           ylab("pace (min/km)") +
+           ylim(min(p), max(p)) +
+           theme(axis.title.x = element_text(family="Droid Sans Mono")) +
+           theme(axis.title.y = element_text(family="Droid Sans Mono"))
+
+          
 # Heart rate plot
 p3 <- ggplot() +
     geom_line(aes(x = dist,
@@ -172,28 +260,14 @@ p3 <- ggplot() +
            size = 1.6,
            col=rgb(0.8,0,0,0.7)) +
            xlab("distance (km)") +
-           ylab("heart rate")
+           ylab("heart rate") +
+           theme(axis.title.x = element_text(family="Droid Sans Mono")) +
+           theme(axis.title.y = element_text(family="Droid Sans Mono"))
 
-# Pace plot
-avepace = ma(gps$pace, 20)
-maxpace = max(na.omit(avepace))
-if (maxpace>10) {
-    maxpace = 10
-}
-minpace = min(na.omit(avepace))
-p4 <- ggplot() +
-    geom_line(aes(x = dist,
-                 y = avepace),
-              size=1.6,
-           data = gps, 
-           col=rgb(0.2,0.2,0.2,0.7)) +
-           xlab("distance (km)") +
-           ylab("pace (min/km)") +
-           ylim(c(minpace,maxpace))
 
-layOut(list(p0, 1, 1:3),   # takes three rows and the first column
-       list(p1, 2:3, 1:3),    # next three are on separate rows
-       list(p2, 4, 1), 
-       list(p3, 4, 2),
-       list(p4, 4, 3))
+layOut(list(p0, 1, 1:3),
+       list(p1, 2:4, 1:3),
+       list(p2, 5, 1), 
+       list(p3, 5, 2),
+       list(p4, 5, 3))
 
