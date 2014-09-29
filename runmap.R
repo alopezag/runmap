@@ -240,7 +240,7 @@ p2 <- ggplot() +
 
 
 # Pace plot
-p4 <- ggplot() +
+p3 <- ggplot() +
     geom_line(aes(x = d,
                  y = p),
               size=1.6,
@@ -253,7 +253,7 @@ p4 <- ggplot() +
 
           
 # Heart rate plot
-p3 <- ggplot() +
+p4 <- ggplot() +
     geom_line(aes(x = dist,
                  y = Heartrate),
            data = gps,
