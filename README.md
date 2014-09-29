@@ -17,6 +17,9 @@ three plots: altitude vs. distance, pace vs. distance and heart rate vs.
 distance.  On the map, GPS coordinates matching most closely to full kilometers
 are highlighted with numbers.
 
+Here is an example image from data provided in file `example.csv`:
+![Run in New York](./example.png)
+
 Note that the distance information is accurately calculated with the ellipsoidal
 formula by Thaddeus Vincenty (Earth is not a ball, after all) and includes a
 correction which takes altitude differences into account (I run close to the
