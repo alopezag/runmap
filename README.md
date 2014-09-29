@@ -47,9 +47,9 @@ trustworthy values.
 
 At the moment, the code assumes that the data is given in csv format. To get it
 from the Garmin, I use
-[python-ant-downloader][https://github.com/braiden/python-ant-downloader] by
+[python-ant-downloader][PAD] by
 Braiden Kindt, which gives me tcx data, which I then convert with
-[gpsbabel][http://www.gpsbabel.org/] with the following command
+[gpsbabel][GPSBABEL] with the following command
 
 `gpsbabel -t -i gtrnctr -f gpsdata.tcx -o unicsv -F gpsdata.csv`
 
@@ -72,6 +72,8 @@ in the hope that it will be useful also for others.
 
 Copyright 2014 Jani Kotakoski, released under the MIT License (see LICENSE.txt).
 
+[PAD]: https://github.com/braiden/python-ant-downloader
+[GPSBABEL]: http://www.gpsbabel.org/
 [OSM]: http://www.openstreetmap.org/
 [R1]:  http://www.r-bloggers.com/great-circle-distance-calculations-in-r/
 [R2]:  http://www.movable-type.co.uk/scripts/latlong-vincenty.html
