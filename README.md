@@ -70,7 +70,7 @@ in the hope that it will be useful also for others.
 
 ## Licence and copyright
 
-Copyright 2014 Jani Kotakoski, released under the MIT License (see License.txt).
+Copyright 2014 Jani Kotakoski, released under the MIT License (see LICENSE.txt).
 
 [OSM]: http://www.openstreetmap.org/
 [R1]:  http://www.r-bloggers.com/great-circle-distance-calculations-in-r/
