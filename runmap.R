@@ -240,6 +240,10 @@ p2 <- ggplot() +
 
 
 # Pace plot
+maxpace = max(p)
+if (maxpace > 10.0) {
+    maxpace = 10.0
+}
 p3 <- ggplot() +
     geom_line(aes(x = d,
                  y = p),
@@ -247,9 +251,9 @@ p3 <- ggplot() +
            col=rgb(0.2,0.2,0.2,0.7)) +
            xlab("distance (km)") +
            ylab("pace (min/km)") +
-           ylim(min(p), max(p)) +
-           theme(axis.title.x = element_text(family="Droid Sans Mono")) +
-           theme(axis.title.y = element_text(family="Droid Sans Mono"))
+           theme(axis.title.x = element_text(family="Droid Sans Mono"),
+                 axis.title.y = element_text(family="Droid Sans Mono")) +
+           coord_cartesian(ylim = c(min(p), maxpace))
 
           
 # Heart rate plot
