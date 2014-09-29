@@ -38,9 +38,9 @@ outfile=opt$outfile
 
 # Output file type
 if (imgtype == "svg") {
-    svg(outfile)
+    svg(outfile, width=8, height=8)
 } else if (imgtype == "png") {
-    png(outfile)
+    png(outfile, width=800, height=800)
 } else if (imgtype == "pdf") {
     pdf(outfile)
 } else {
