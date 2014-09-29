@@ -53,8 +53,6 @@ ma <- function(x,n=15){filter(x,rep(1/n,n), sides=1)}
 
 # Calculates the geodesic distance between two points specified by radian
 # latitude/longitude using Vincenty inverse formula for ellipsoids (vif)
-#
-# From: [http://www.r-bloggers.com/great-circle-distance-calculations-in-r/]
 geoDist <- function(long1, lat1, long2, lat2) {
 
   # WGS-84 ellipsoid parameters
