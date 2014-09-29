@@ -20,14 +20,17 @@ are highlighted with numbers.
 Here is an example image from data provided in file `example.csv`:
 ![Run in New York](./example.png)
 
-Note that the distance information is accurately calculated with the ellipsoidal
-formula by Thaddeus Vincenty (Earth is not a ball, after all) and includes a
-correction which takes altitude differences into account (I run close to the
-Alps, altitude differences can be several hundreds of meters during one run).
+Note that the distance information is accurately calculated with the
+ellipsoidal formula by **Thaddeus Vincenty** (the Earth is not a ball, after
+all) and includes a correction which takes altitude differences into account (I
+run close to the Alps, altitude differences can be several hundreds of meters
+during one run).
 
 For pace, the individual data points are **way** too noisy. So, the pace is
 calculated separately for every 100 m trek, which seems to give reasonably
 trustworthy values.
+
+The original inspiration for this code came from **Mollie Taylor**'s [blog][MT].
 
 ## Required R packages
 
@@ -51,7 +54,7 @@ trustworthy values.
 At the moment, the code assumes that the data is given in csv format. To get it
 from the Garmin, I use
 [python-ant-downloader][PAD] by
-Braiden Kindt, which gives me tcx data, which I then convert with
+**Braiden Kindt**, which gives me tcx data, which I then convert with
 [gpsbabel][GPSBABEL] with the following command
 
 `gpsbabel -t -i gtrnctr -f gpsdata.tcx -o unicsv -F gpsdata.csv`
@@ -62,8 +65,8 @@ new file to be fed to `runmap`.
 ## Resources
 
 The code for calculating the geodesic distance between two points is originally
-by Mario Pineda-Krch from [r-bloggers.com][R1], which in turn is an adaptation
-from the JavaScript code by Chriss Veness from [movable-type.co.uk][R2]
+by **Mario Pineda-Krch** from [r-bloggers.com][R1], which in turn is an adaptation
+from the JavaScript code by **Chriss Veness** from [movable-type.co.uk][R2]
 (attribution license).
 
 ## Author
@@ -75,6 +78,7 @@ in the hope that it will be useful also for others.
 
 Copyright 2014 Jani Kotakoski, released under the MIT License (see LICENSE.txt).
 
+[MT]: http://blog.mollietaylor.com/2012/12/mapping-gps-tracks-in-r.html
 [PAD]: https://github.com/braiden/python-ant-downloader
 [GPSBABEL]: http://www.gpsbabel.org/
 [OSM]: http://www.openstreetmap.org/
