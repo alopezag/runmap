@@ -153,7 +153,7 @@ pacem = floor(paces/60.0)
 paces = round(paces - pacem*60.0)
 
 
-# Paces measured point-by-point are inaccurage; use 100 m divisions
+# Paces measured point-by-point are inaccurate; use 100 m divisions
 maxdist = gps$dist[nrow(gps)]
 d = seq(1,floor(maxdist*10))*0.1
 p = seq(1,floor(maxdist*10))*0.1
@@ -165,6 +165,9 @@ for (i in 1:floor(maxdist*10)) {
                   strptime(paste(gps$Date[indexlast],gps$Time[indexlast]),"%Y/%m/%d %H:%M:%S"),
                   unit="s")
     dx = gps$dist[index] - gps$dist[indexlast]
+    if (dx < 0.000001) {
+        dx = 0.000001
+    }
     p[i] = dt/60.0/dx
 }
 
